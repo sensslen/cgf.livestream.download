@@ -1,5 +1,4 @@
 import sys
-from kodi_six import xbmc, xbmcplugin, xbmcgui, xbmcaddon
 import re, os, time
 from datetime import datetime, timedelta
 #import urllib, urllib2
@@ -17,17 +16,6 @@ addon_handle = int(sys.argv[1])
 API_KEY = '98f12273997c31eab6cfbfbe64f99d92'
 APP_ID = '7KJECL120U'
 
-#Settings
-USERNAME = str(xbmcaddon.Addon().getSetting(id="username"))
-PASSWORD = str(xbmcaddon.Addon().getSetting(id="password"))
-AUTO_PLAY = str(xbmcaddon.Addon().getSetting(id="auto_play"))
-
-#Localisation
-local_string = xbmcaddon.Addon().getLocalizedString
-ROOTDIR = xbmcaddon.Addon().getAddonInfo('path')
-ICON = os.path.join(ROOTDIR,"icon.png")
-FANART = os.path.join(ROOTDIR,"fanart.jpg")
-
 SEARCH_HITS = '25'
 LIVE_COLOR = 'FF00B7EB'
 SECTION_COLOR = 'FFFFFF66'
@@ -42,14 +30,6 @@ ALGOLIA_URL = 'https://7kjecl120u-3.algolia.io/1'
 API_URL = 'https://api.new.livestream.com'
 
 VERIFY = False
-
-def categories():                    
-    addDir('Browse by Category','/livestream',100,ICON,FANART)    
-    addDir('Following','/login',150,ICON,FANART)
-    addDir('Search','/search',102,ICON,FANART)
-    addDir('Search History','/history',107,ICON,FANART)
-    addDir('Manually Enter','/manual',160,ICON,FANART)
-         
 
 def getCategories():
     live_events = []    
@@ -71,14 +51,12 @@ def getCategories():
             for category in json_source['hits']:
                 cat_info = json.dumps(category)
                 name = category['name'] + ' (' + str(category['category_live_events']) + ')'
-                live_events.append([name,ICON,FANART,None,None,None,cat_info])
+                live_events.append([name,None,None,None,cat_info])
 
             for event in  sorted(live_events, key=lambda tup: tup[0]):
                 addDir(event[0],'/livestream',106,event[1],event[2],event[3],event[4],event[5],event[6])
     else:
         msg = "Error getting categories"
-        dialog = xbmcgui.Dialog()
-        ok = dialog.ok('Error', msg)
 
 
 def getCategoryEvents(cat_info):
@@ -114,7 +92,6 @@ def getCategoryEvents(cat_info):
         name = owner_name + ' - ' + full_name
         
         icon = None
-        fanart = FANART
         try:
             icon = str(event['logo']['large']['url'])
             #fanart = event['background_image']['url']
@@ -149,23 +126,7 @@ def search(search_txt=''):
     json_source = ''
     if search_txt != '':
         url = ALGOLIA_URL+'/indexes/*/queries'
-        # req = urllib2.Request(url)
-        # req.addheaders = [ ("Accept", "*/*"),
-        #                     ("Origin", "http://livestream.com"),
-        #                     ("Accept-Language", "en-US,en;q=0.8"),
-        #                     ("Accept-Encoding", "gzip, deflate"),
-        #                     ("X-Algolia-Application-Id", APP_ID),
-        #                     ("X-Algolia-API-Key", API_KEY),
-        #                     ("Content-type", "application/json"),
-        #                     ("Connection", "keep-alive"),
-        #                     ("Referer", "http://livestream.com/watch"),
-        #                     ("User-Agent", UA_WEB)]
-        #
-        #
-        # json_search = '{"requests":[{"indexName":"events","params":"query='+search_txt+'&hitsPerPage='+SEARCH_HITS+'"},{"indexName":"accounts","params":"query='+search_txt+'&hitsPerPage='+SEARCH_HITS+'"},{"indexName":"videos","params":"query='+search_txt+'&hitsPerPage='+SEARCH_HITS+'"}],"apiKey":"'+API_KEY+'","appID":"'+APP_ID+'"}'
-        # response = urllib2.urlopen(req,json_search)
-        # json_source = json.load(response)
-        # response.close()
+
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json; charset=utf-8",
@@ -184,54 +145,6 @@ def search(search_txt=''):
         r = requests.post(url, headers=headers, json=json_search, verify=VERIFY)
     
     searchResults(r.json())
-
-
-def getHistory():
-    lines = []
-    addon_profile_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
-    fname = os.path.join(addon_profile_path, 'search_history.txt')
-    if not os.path.isfile(fname):
-        if not os.path.exists(addon_profile_path):
-            os.makedirs(addon_profile_path)
-    else:        
-        with open(fname) as file:
-            for line in file:
-                line = line.strip()
-                lines.append(line)  
-
-    dialog = xbmcgui.Dialog()
-    ret = dialog.select('Search History', lines)
-    if ret > -1:
-        search_txt = lines[ret]    
-        search(search_txt)
-    else:
-        sys.exit()
-
-
-def addHistory(search_text):
-    lines = []
-    addon_profile_path = xbmc.translatePath(xbmcaddon.Addon().getAddonInfo('profile'))
-    fname = os.path.join(addon_profile_path, 'search_history.txt')
-    if not os.path.isfile(fname):
-        if not os.path.exists(addon_profile_path):
-            os.makedirs(addon_profile_path)
-    else:        
-        with open(fname) as file:
-            for line in file:
-                line = line.strip()
-                lines.append(line)  
-        
-    search_file = open(fname,'w')   
-    lines.insert(0,search_text)    
-    i=0
-    for line in lines:
-        search_file.write(line)
-        search_file.write('\n')
-        i+=1
-        if i >= 10: break
-
-    search_file.close()
-
 
 def searchResults(json_source):
     if json_source != '':
