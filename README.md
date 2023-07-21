@@ -12,6 +12,7 @@ https://api.new.livestream.com/accounts/8742906/events/3094105/feed/?maxItems=45
 Extract id feeds using {data[0].data.id}
 
 4. Get single feed info:
+This step is needed, as the URl's generated in the request before expire after some time. Therefore it's safer to re-request the url's just before downloading
 https://api.new.livestream.com/accounts/8742906/events/3094105/videos/236887141
 
 Convert using ffmpeg:
