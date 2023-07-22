@@ -49,7 +49,10 @@ $videos = $completeFeed.data
 
 foreach ($video in $videos) {
     $videoName = $video.data.caption
-    $fileName = "$videoName.ts"
+    $videoCreationDate = [Datetime]::Parse($video.data.created_at)
+    $videoUploadDate = [Datetime]::Parse($video.data.streamed_at)
+    $datePrefix = $videoUploadDate.ToString("yyyy-MM-dd-")
+    $fileName = "$datePrefix$videoName.m4v"
     $filePath = [IO.Path]::Combine($output_folder_full, $fileName)
 
     Write-Host "Downloading video to $filePath"
@@ -58,9 +61,6 @@ foreach ($video in $videos) {
         Write-Output "Skipping the donload of $filePath, as the file already exists"
     }
     else {
-        $videoCreationDate = $video.data.created_at
-        $videoUploadDate = $video.data.streamed_at
-
         $video_id = $video.data.id
         $videoInfoUrl = "https://api.new.livestream.com/accounts/$account_id/events/$event_id/videos/$video_id"
         Write-Output "Downloading Video information using:$videoInfoUrl"
@@ -80,10 +80,10 @@ foreach ($video in $videos) {
         $ffmpegCommand = """$ffmpeg_location_full"" -i ""$downloadUrl"" -map m:variant_bitrate:$maximumVideoBitrate -c copy ""$filePath"""
         Write-Output "Executing $ffmpegCommand"
 
-        & $ffmpeg_location_full -i """$downloadUrl""" -map "m:variant_bitrate:$maximumVideoBitrate" -c "copy" """$filePath"""
+        & $ffmpeg_location_full -i """$downloadUrl""" -map "m:variant_bitrate:$maximumVideoBitrate" -bsf:a "aac_adtstoasc" -c "copy" """$filePath"""
 
         Write-Output "Setting creation time of file:$filePath to:$videoCreationDate"
-        $(Get-Item $filePath).CreationTime = [Datetime]::Parse($videoCreationDate)
-        $(Get-Item $filePath).ModifiedAt = [Datetime]::Parse($videoUploadDate)
+        $(Get-Item $filePath).CreationTime = $videoCreationDate
+        $(Get-Item $filePath).ModifiedAt = $videoUploadDate
     }
 }
