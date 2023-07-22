@@ -58,7 +58,8 @@ foreach ($video in $videos) {
         Write-Output "Skipping the donload of $filePath, as the file already exists"
     }
     else {
-        $videoCreationDate = $video.data.streamed_at
+        $videoCreationDate = $video.data.created_at
+        $videoUploadDate = $video.data.streamed_at
 
         $video_id = $video.data.id
         $videoInfoUrl = "https://api.new.livestream.com/accounts/$account_id/events/$event_id/videos/$video_id"
@@ -81,9 +82,8 @@ foreach ($video in $videos) {
 
         & $ffmpeg_location_full -i """$downloadUrl""" -map "m:variant_bitrate:$maximumVideoBitrate" -c "copy" """$filePath"""
 
-        . $ffmpegCommand
-
         Write-Output "Setting creation time of file:$filePath to:$videoCreationDate"
-        $(Get-Item $filePath).creationtime = $videoCreationDate
+        $(Get-Item $filePath).CreationTime = [Datetime]::Parse($videoCreationDate)
+        $(Get-Item $filePath).ModifiedAt = [Datetime]::Parse($videoUploadDate)
     }
 }
