@@ -1,19 +1,7 @@
-1. Get Account and event id's
+# Cgf.Livestream.Download
 
+This is a powershell script that allows to archive all videos in an event published through livestream.com.
 
-2. Get general info:
-https://api.new.livestream.com/accounts/8742906/events/3094105/
+You have to provide it with the account and event ID and also the location where to find the ffmpeg executable (https://www.ffmpeg.org/).
 
-Extract feed count via {root.feed.total}
-
-3. Get all feed info:
-https://api.new.livestream.com/accounts/8742906/events/3094105/feed/?maxItems=459
-
-Extract id feeds using {data[0].data.id}
-
-4. Get single feed info:
-This step is needed, as the URl's generated in the request before expire after some time. Therefore it's safer to re-request the url's just before downloading
-https://api.new.livestream.com/accounts/8742906/events/3094105/videos/236887141
-
-Convert using ffmpeg:
-ffmpeg -i {root.m3u8_url} -map m:variant_bitrate:{root.asset.qualities[index with highest bitrate].bitrate} -c copy output.ts
+It than crawls the event and downloads each video in it's highest quality. It uses the description as filename.
