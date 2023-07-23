@@ -14,4 +14,4 @@ It then crawls the event and downloads each video in it's highest quality. It us
 3. Get the embed link for the event <br>
    ![Get Embed Link](/assets/getEmbedLink.png)
 4. Extract account and event ID's from the url <br>
-   ![Extract Account and Event ID's](/assets/extractAccountAndEventId_.png)
+   ![Extract Account and Event ID's](/assets/extractIds.png)
