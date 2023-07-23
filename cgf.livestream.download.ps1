@@ -3,10 +3,10 @@ param(
     [string] $account_id,
     [parameter(mandatory = $true)]
     [string] $event_id,
-    [parameter(mandatory = $false)]
-    [string] $output_folder = '.',
-    [parameter(mandatory = $false)]
-    [string] $ffmpeg_location = './ffmpeg.exe'
+    [parameter(mandatory = $true)]
+    [string] $output_folder,
+    [parameter(mandatory = $true)]
+    [string] $ffmpeg_location
 )
 
 $output_folder_full = [IO.Path]::GetFullPath($output_folder)
