@@ -47,6 +47,8 @@ $completeFeed = $completeFeedResponse.Content | ConvertFrom-Json
 
 $videos = $completeFeed.data
 
+Write-Host "Downloading all $numberOfFilesInFeed videos from event with id:$event_id"
+
 foreach ($video in $videos) {
     $videoName = $video.data.caption
     $videoCreationDate = [Datetime]::Parse($video.data.created_at)
@@ -84,6 +86,6 @@ foreach ($video in $videos) {
 
         Write-Output "Setting creation time of file:$filePath to:$videoCreationDate"
         $(Get-Item $filePath).CreationTime = $videoCreationDate
-        $(Get-Item $filePath).ModifiedAt = $videoUploadDate
+        $(Get-Item $filePath).LastWriteTime = $videoUploadDate
     }
 }
