@@ -15,3 +15,6 @@ It then crawls the event and downloads each video in it's highest quality. It us
    ![Get Embed Link](/assets/getEmbedLink.png)
 4. Extract account and event ID's from the url <br>
    ![Extract Account and Event ID's](/assets/extractIds.png)
+
+## Start Cgf.Livestream.Download
+1. 
