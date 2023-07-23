@@ -11,12 +11,12 @@ param(
 
 $output_folder_full = [IO.Path]::GetFullPath($output_folder)
 if (!(Test-Path -Path $output_folder_full -PathType Container)) {
-    throw "Coult not find folder $output_folder_full"
+    throw "Could not find output folder $output_folder_full"
 }
 
 $ffmpeg_location_full = [IO.Path]::GetFullPath($ffmpeg_location)
 if (!(Test-Path -Path $ffmpeg_location_full  -PathType Leaf)) {
-    throw "Coult not find ffmpeg at $ffmpeg_location_full"
+    throw "Could not find ffmpeg at $ffmpeg_location_full"
 }
 
 $eventInfoUrl = "https://api.new.livestream.com/accounts/$account_id/events/$event_id/"
