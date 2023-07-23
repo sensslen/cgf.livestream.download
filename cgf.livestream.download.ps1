@@ -58,7 +58,8 @@ foreach ($video in $videos) {
     $videoCreationDate = [Datetime]::Parse($video.data.created_at)
     $videoUploadDate = [Datetime]::Parse($video.data.streamed_at)
     $datePrefix = $videoUploadDate.ToString("yyyy-MM-dd-")
-    $fileName = "$datePrefix$videoName.m4v"
+    $videoNameWithoutInvalidCharacters = $videoName.Split([IO.Path]::GetInvalidFileNameChars()) -join '_'
+    $fileName = "$datePrefix$videoNameWithoutInvalidCharacters.m4v"
     $filePath = [IO.Path]::Combine($output_folder_full, $fileName)
 
     Write-Host "Downloading video to $filePath"
@@ -84,10 +85,10 @@ foreach ($video in $videos) {
         $maximumVideoBitrate = ($videoInfo.asset.qualities | ForEach-Object { $_.bitrate } | Measure-Object -Maximum).Maximum
 
         $downloadUrl = $videoInfo.m3u8_url
-        $ffmpegCommand = """$ffmpeg_location_full"" -i ""$downloadUrl"" -map m:variant_bitrate:$maximumVideoBitrate -c copy ""$filePath"""
+        $ffmpegCommand = """$ffmpeg_location_full"" -i ""$downloadUrl"" -metadata title=""$videoName"" -map m:variant_bitrate:$maximumVideoBitrate -c copy ""$filePath"""
         Write-Output "Executing $ffmpegCommand"
 
-        & $ffmpeg_location_full -i """$downloadUrl""" -map "m:variant_bitrate:$maximumVideoBitrate" -bsf:a "aac_adtstoasc" -c "copy" """$filePath"""
+        & $ffmpeg_location_full -i """$downloadUrl""" -metadata "title=""$videoName""" -map "m:variant_bitrate:$maximumVideoBitrate" -bsf:a "aac_adtstoasc" -c "copy" """$filePath"""
 
         Write-Output "Setting creation time of file:$filePath to:$videoCreationDate"
         $(Get-Item $filePath).CreationTime = $videoCreationDate
