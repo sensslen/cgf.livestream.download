@@ -11,12 +11,14 @@ param(
 
 $output_folder_full = [IO.Path]::GetFullPath($output_folder)
 if (!(Test-Path -Path $output_folder_full -PathType Container)) {
-    throw "Could not find output folder $output_folder_full"
+    Write-Error "Could not find output folder $output_folder_full"
+    exit
 }
 
 $ffmpeg_location_full = [IO.Path]::GetFullPath($ffmpeg_location)
 if (!(Test-Path -Path $ffmpeg_location_full  -PathType Leaf)) {
-    throw "Could not find ffmpeg at $ffmpeg_location_full"
+    Write-Error "Could not find ffmpeg at $ffmpeg_location_full"
+    exit
 }
 
 $eventInfoUrl = "https://api.new.livestream.com/accounts/$account_id/events/$event_id/"
@@ -25,8 +27,9 @@ Write-Output "Downloading Event Information using url:$eventInfoUrl"
 $eventInfoResponse = Invoke-WebRequest $eventInfoUrl
 
 if ($eventInfoResponse.StatusCode -ne [system.net.httpstatuscode]::ok) {
-    Write-Output "Failed to gather event information"
-    throw $eventInfoResponse
+    Write-Error "Failed to gather event information"
+    Write-Error $eventInfoResponse
+    exit
 }
 
 $eventInfo = $eventInfoResponse.Content | ConvertFrom-Json
@@ -39,8 +42,9 @@ Write-Output "Downloading Event feed using url:$completeFeedUrl"
 $completeFeedResponse = Invoke-WebRequest $completeFeedUrl
 
 if ($completeFeedResponse.StatusCode -ne [system.net.httpstatuscode]::ok) {
-    Write-Output "Failed to download feed information"
-    throw $completeFeedResponse
+    Write-Error "Failed to download feed information"
+    Write-Error $completeFeedResponse
+    exit
 }
 
 $completeFeed = $completeFeedResponse.Content | ConvertFrom-Json
@@ -70,8 +74,9 @@ foreach ($video in $videos) {
         $videoInfoResponse = Invoke-WebRequest $videoInfoUrl
 
         if ($videoInfoResponse.StatusCode -ne [system.net.httpstatuscode]::ok) {
-            Write-Output "Failed to get video information via: $videoInfoUrl"
-            throw $videoInfoResponse
+            Write-Error "Failed to get video information via: $videoInfoUrl"
+            Write-Error $videoInfoResponse
+            exit
         }
 
         $videoInfo = $videoInfoResponse.Content | ConvertFrom-Json
