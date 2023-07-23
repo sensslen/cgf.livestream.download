@@ -58,7 +58,7 @@ foreach ($video in $videos) {
     Write-Host "Downloading video to $filePath"
 
     if (Test-Path -Path $filePath -PathType Any) {
-        Write-Output "Skipping the donload of $filePath, as the file already exists"
+        Write-Output "Skipping the download of $filePath, as the file already exists"
     }
     else {
         $video_id = $video.data.id
