@@ -44,7 +44,6 @@ $feedChunkUrl = "https://api.new.livestream.com/accounts/${account_id}/events/${
 $videos = Get-ChunkVideoInfo($feedChunkUrl)
 
 while ($videos.Count -gt 0) {
-
     foreach ($video in $videos) {
         $video_id = $video.data.id
         $videoInfoUrl = "https://api.new.livestream.com/accounts/${account_id}/events/${event_id}/videos/${video_id}"
@@ -83,7 +82,7 @@ while ($videos.Count -gt 0) {
             $ffmpegCommand = """${ffmpeg_location_full}"" -i ""${downloadUrl}"" -metadata title=""${videoName}"" -map m:variant_bitrate:${maximumVideoBitrate} -c copy ""${filePath}"""
             Write-Host "Executing $ffmpegCommand"
 
-            & $ffmpeg_location_full -i """${downloadUrl}""" -t "5" -metadata "title=""${videoName}""" -map "m:variant_bitrate:${maximumVideoBitrate}" -bsf:a "aac_adtstoasc" -c "copy" """${filePath}"""
+            & $ffmpeg_location_full -i """${downloadUrl}""" -metadata "title=""${videoName}""" -map "m:variant_bitrate:${maximumVideoBitrate}" -bsf:a "aac_adtstoasc" -c "copy" """${filePath}"""
 
             Write-Host "Setting creation time of file:${filePath} to:${videoCreationDate}"
             $(Get-Item $filePath).CreationTime = $videoCreationDate
