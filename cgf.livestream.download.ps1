@@ -6,7 +6,9 @@ param(
     [parameter(mandatory = $true)]
     [string] $output_folder,
     [parameter(mandatory = $true)]
-    [string] $ffmpeg_location
+    [string] $ffmpeg_location,
+    [parameter(mandatory = $false)]
+    [bool] $stop_on_error = $false
 )
 
 $output_folder_full = [IO.Path]::GetFullPath($output_folder)
@@ -17,7 +19,7 @@ if (!(Test-Path -Path $output_folder_full -PathType Container)) {
 
 $ffmpeg_location_full = [IO.Path]::GetFullPath($ffmpeg_location)
 if (!(Test-Path -Path $ffmpeg_location_full  -PathType Leaf)) {
-    Write-Error "Could not find ffmpeg at ${ffmpeg_location_full}"
+    Write-Error "Could not find ffmpeg at ${ffmpeg_location_full}. Download the binary via https://ffmpeg.org/download.html"
     exit
 }
 
@@ -71,23 +73,40 @@ while ($videos.Count -gt 0) {
             if ($videoInfoResponse.StatusCode -ne [system.net.httpstatuscode]::ok) {
                 Write-Error "Failed to get video information via: ${videoInfoUrl}"
                 Write-Error $videoInfoResponse
-                exit
+                if ($stop_on_error) {
+                    exit
+                }
             }
 
             $videoInfo = $videoInfoResponse.Content | ConvertFrom-Json
 
-            $maximumVideoBitrate = ($videoInfo.asset.qualities | ForEach-Object { $_.bitrate } | Measure-Object -Maximum).Maximum
-
             $downloadUrl = $videoInfo.m3u8_url
-            $ffmpegCommand = """${ffmpeg_location_full}"" -i ""${downloadUrl}"" -metadata title=""${videoName}"" -map m:variant_bitrate:${maximumVideoBitrate} -c copy ""${filePath}"""
-            Write-Host "Executing $ffmpegCommand"
+            $maximumVideoBitrate = ($videoInfo.asset.qualities | Measure-Object -Property bitrate -Maximum).Maximum
+            $ffmpegCommandParameters = @("-analyzeduration", "100M", "-probesize", "1G", "-i", """${downloadUrl}""","-map", "m:variant_bitrate:${maximumVideoBitrate}", "-metadata", "title=""${videoName}""", "-c", "copy" , """${filePath}""")
+            
+            Write-Host "Executing ""${ffmpeg_location_full} ${ffmpegCommandParameters}"""
 
-            & $ffmpeg_location_full -i """${downloadUrl}""" -metadata "title=""${videoName}""" -map "m:variant_bitrate:${maximumVideoBitrate}" -bsf:a "aac_adtstoasc" -c "copy" """${filePath}"""
+            & $ffmpeg_location_full $ffmpegCommandParameters
+
+            if (!(Test-Path -Path $filePath -PathType Any)) {
+                Write-Error "Download failed. The File ""${filePath}"" was not created. Refer to above logs for more information."   
+                if ($stop_on_error) {
+                    exit
+                }
+            }
+
+            $fileInfo = Get-Item $filePath
+            if ($fileInfo.Length -le 0) {
+                Write-Error "Download failed. The File ""${filePath}"" was has file size 0. Refer to above logs for more information."       
+                if ($stop_on_error) {
+                    exit
+                }
+            }
 
             Write-Host "Setting creation time of file:${filePath} to:${videoCreationDate}"
-            $(Get-Item $filePath).CreationTime = $videoCreationDate
+            $fileInfo.CreationTime = ${videoCreationDate}
             Write-Host "Setting las write time of file:${filePath} to:${videoPulishDate}"
-            $(Get-Item $filePath).LastWriteTime = $videoPulishDate
+            $fileInfo.LastWriteTime = $videoPulishDate
         }
     }
 
