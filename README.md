@@ -18,8 +18,8 @@ It then crawls the event and downloads each video in it's highest quality. It us
 
 ## Start Cgf.Livestream.Download
 1. Download the [Powershell Script](./cgf.livestream.download.ps1) and store it on your computer.
-2. Download and store the ffmpeg.exe file in the same folder.
-3. Ensure you have set in PowerShell your Executionpolicy to "unrestricted" or "Remote Signed" (Use PowerShell Command "set-executionpolicy -RemoteSign")
+2. Download ffmpeg from (https://www.ffmpeg.org/download.html) and take note of the file path of `ffmpege.exe`.
+3. Ensure you have set in PowerShell your Executionpolicy to "unrestricted" or "Remote Signed" (Use PowerShell Command `set-executionpolicy -RemoteSign`)
    More information about the execution policy can be found here: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-5.1
 4. Ensure you use PowerShell version 5.1 as this tool is not tested on other PowerShell versions.
 5. Start a powershell console and change the path to your local folder where you have stored the script (use the command "cd" followed by the path, for example: `cd C:\mypath`)
